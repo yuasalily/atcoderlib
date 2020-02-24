@@ -20,23 +20,49 @@ class ModInt:
         return str(self.x)
 
     def __add__(self, other):
-        return self.__class__(self.x + (other.x % self.mod))
+        if isinstance(other, self.__class__):
+            return self.__class__(self.x + (other.x % self.mod))
+        else:
+            return self.__class__(self.x + (other % self.mod))
 
     def __sub__(self, other):
-        return self.__class__(self.x - (other.x % self.mod) if \
-            (self.x - (other.x % self.mod)) > 0 else (self.x - (other.x % self.mod)) + self.mod)
+        if isinstance(other, self.__class__):
+            return self.__class__(self.x - (other.x % self.mod) if \
+                (self.x - (other.x % self.mod)) > 0 else (self.x - (other.x % self.mod)) + self.mod)
+        else:
+            return self.__class__(self.x - (other % self.mod) if \
+                (self.x - (other % self.mod)) > 0 else (self.x - (other % self.mod)) + self.mod)
 
     def __mul__(self, other):
-        return self.__class__(self.x * (other.x % self.mod))
+        if isinstance(other, self.__class__):
+            return self.__class__(self.x * (other.x % self.mod))
+        else:
+            return self.__class__(self.x * (other % self.mod))
 
     def __truediv__(self, other):
-        return self.__class__(self.x * pow(other.x, self.mod - 2, self.mod))
+        return self.__class__(self.x * other.inv().x)
 
     def __pow__(self, other):
-        return self.__class__(pow(self.x, other.x, self.mod))
-        
+        if isinstance(other, self.__class__):
+            return self.__class__(pow(self.x, other.x, self.mod))
+        else:
+            return self.__class__(pow(self.x, other, self.mod))
 
+    def inv(self):
+        return self.__class__(pow(self.x, self.mod - 2, self.mod))
+
+def modcomb(n, r, mod=1000000007):
+    """
+    nCrを返す。
+    ModIntが必要。
+    1 <= r <= n <= modが必要。
+    """
+    x = ModInt(1, mod)
+    y = ModInt(1, mod)
+    for i in range(r):
+        x = x * (n - i)
+        y = y * (i + 1)
+    return x / y
+        
 if __name__ == "__main__":
-    a = ModInt(5)
-    b = ModInt(2)
-    print(a**b)
+    pass
