@@ -5,12 +5,14 @@
 #include<string>
 #include<cmath>
 using namespace std;
+//c++で整数処理
 
+//mod計算用のクラス
 class ModInt{
-    public:
+public:
     long long int x;
     long long int mod;
-	ModInt(){cout << "test";}
+	ModInt(){}
     ModInt(long long int _x, long long int _mod = 1000000007){
         this->x = _x % _mod;
         this->mod = _mod;
@@ -51,6 +53,8 @@ ostream& operator<<(ostream& stream, const ModInt m){
 	stream << to_string(m.x);
 	return stream;
 }
+
+//mod nCrを返す関数.ModIntが必要.
 ModInt modcomb(long long int n, long long int r, long long int _mod = 1000000007){
 	ModInt x(1, _mod), y(1, _mod);
 	for (long long int i = 0; i < r; i++){
@@ -58,4 +62,46 @@ ModInt modcomb(long long int n, long long int r, long long int _mod = 1000000007
 		y = y * ModInt(i + 1);
 	}
 	return x / y;
+}
+
+//mod nCrを返す関数.何回も計算するときはこっち.未検証
+long long int modcomb(int n, int r, int mod = 1000000007){
+	if (n < r) return 0;
+    if (n < 0 || r < 0) return 0;
+	static int flag = 1;
+	static vector<long long int> fac(n+1,1);
+	static vector<long long int> finv(n+1,1);
+	static vector<long long int> inv(n+1,1);
+	if (flag){
+		for (int i = 2; i < n+1; i++){
+			fac[i] = fac[i - 1] * i % mod;
+			inv[i] = mod - inv[mod%i] * (mod / i) % mod;
+			finv[i] = finv[i - 1] * inv[i] % mod;
+  		}
+		flag = 0;
+	}
+    return fac[n] * (finv[r] * finv[n - r] % mod) % mod;
+}
+
+//最大公約数を返す関数.未検証
+long long int gcd(long long int x, long long int y){
+    if (x < y) swap(x,y);
+    while (y > 0){
+        long long int r = x % y;
+        x = y;
+        y = r;
+    }
+    return x;
+}
+//最小公倍数を返す関数.未検証
+long long int lcm(long long int x, long long int y){
+    return x * y / gcd(x,y);
+}
+//素数かどうかを判定する関数.未検証
+int isprime(long long int n){
+    if (n == 2) return 1;
+    for (int i=2;i < sqrt(n)+1;i++){
+        if (n % i == 0) return 0;
+    }
+    return 1;
 }

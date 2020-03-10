@@ -10,7 +10,7 @@ using namespace std;
 //c++でグラフ理論
 
 //深さ優先探索のテンプレ.デフォルトでは参照渡ししたsetに探索済みの頂点が格納される.
-//graphは隣接リスト
+//graphは隣接リスト.vは探索開始地点.seenは空のセット
 void dfs(vector<vector<int>> &graph, int v, set<int> &seen){
 	seen.insert(v);
 	for (int i=0;i<graph[v].size();i++){
@@ -21,8 +21,8 @@ void dfs(vector<vector<int>> &graph, int v, set<int> &seen){
 }
 
 //幅優先探索のテンプレ.デフォルトではstartからの距離を返す.
-//graphは隣接リスト
-vector<int> bfs(vector<vector<int>> &graph,int start){
+//graphは隣接リスト.startは探索開始地点
+vector<int> bfs(vector<vector<int>> &graph, int start){
 	queue<int> todo;
 	vector<int> dist(graph.size(),-1);
 	dist[start] = 0;
@@ -41,7 +41,7 @@ vector<int> bfs(vector<vector<int>> &graph,int start){
 }
 
 //UnionFind木のテンプレ.parentには根のindexが入っている.
-//根には自身のindexが入っている.
+//根には自身のindexが入っている.nはノード数.
 class UnionFind{
 public:
 	vector<int> parent;
@@ -71,8 +71,30 @@ public:
 	}
 };
 
+//クラスカル法.UnionFindが必要.最小全域木の重みの総和を返す.
+//nはノード数.queは(weight,from,to)の順に格納された順序付き待ち行列.
+// int v, e; cin >> v >> e;
+// 	priority_queue<vector<int>,vector<vector<int>>,greater<vector<int>>> que;
+// 	for (int i = 0; i < e; i++){
+// 		int s, t, w; cin >> s >> t >> w;
+// 		que.push({w,s,t});
+// 	}
+int kruskal(int n, priority_queue<vector<int>,vector<vector<int>>,greater<vector<int>>> que){
+	UnionFind uf(n);
+	int weight = 0;
+	while(!que.empty()){
+		vector<int> now = que.top();
+		que.pop();
+		if (!uf.same(now[1],now[2])){
+			uf.unite(now[1],now[2]);
+			weight += now[0];
+		}
+	}
+	return weight;
+}
+
 //連結成分のサイズがわかるUnionFind木のテンプレ.parentには根のindexが入っている.
-//根には連結成分の大きさが入っている.
+//根には連結成分の大きさが入っている.nはノード数.
 class SizeUnionFind{
 public:
 	vector<int> _size;
@@ -102,6 +124,37 @@ public:
 		return -this->_size[this->root(x)];
 	}
 };
+
+//ダイクストラ法のテンプレ.
+//graphはコスト付きの隣接リスト(node,costの順にpairに格納).
+//startからの最短距離が格納されたvectorを返す.
+// int v,e,r; cin >> v >> e >> r; /*v:#頂点数,b:#辺の数,r:開始地点*/
+// vector<vector<pair<int,int>>> graph(v,vector<pair<int,int>>());
+// for (int i = 0; i < e;i++){
+// 	int a,b,c; cin >> a >> b >> c; /*a:from,b:to,c:cost*/
+// 	graph[a].push_back(pair<int,int>(b,c));
+// }
+vector<int> dijkstra(vector<vector<pair<int,int>>> graph, int start){
+	int inf = 2001001000;
+	priority_queue<pair<int,int>,vector<pair<int,int>>,greater<pair<int,int>>> que;
+	vector<int> dist(graph.size(),inf);
+	dist[start] = 0;
+	que.push(pair<int,int>(0,start));
+	while(!que.empty()){
+		pair<int,int> now = que.top();
+		que.pop();
+		int c = now.first, from = now.second;
+		if (dist[from] < c) continue;
+		for (int i = 0; i < graph[from].size(); i++){
+			int to = graph[from][i].first, cost = graph[from][i].second;
+			if (dist[to] > dist[from] + cost){
+				dist[to] = dist[from] + cost;
+				que.push(pair<int,int>(dist[to],to));
+			}
+		}
+	}
+	return dist;
+}
 
 //ワーシャルフロイト法のテンプレ.graphに最短経路が格納される.inf + const = inf に気を付ければ大丈夫
 //graphは隣接行列
