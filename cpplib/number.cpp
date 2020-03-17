@@ -90,8 +90,9 @@ long long int modcomb(int n, int r, int mod = 1000000007){
 
 //累積和を返す関数.
 vector<int> csum(vector<int> a){
-	vector<int> res(a.size(), 0);
-	for (int i = 0; i < a.size();i++){
+	vector<int> res(a.size() + 1, 0);
+	for (int i = 0; i < a.size(); i++)
+	{
 		res[i + 1] = res[i] + a[i];
 	}
 	return res;
