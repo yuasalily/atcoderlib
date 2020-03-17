@@ -6,6 +6,9 @@
 #include<cmath>
 #include<set>
 #include<queue>
+#include<bitset>
+#include<iomanip>
+#include<cctype>
 using namespace std;
 //c++でグラフ理論
 
@@ -41,35 +44,38 @@ vector<int> bfs(vector<vector<int>> &graph, int start){
 }
 
 //UnionFind木のテンプレ.parentには根のindexが入っている.
-//根には自身のindexが入っている.nはノード数.
+//根には連結成分のサイズが入っている.nはノード数.
 class UnionFind{
 public:
 	vector<int> parent;
 	UnionFind(){}
 	UnionFind(int n){
-		this->parent = vector<int>(n);
-		for (int i = 0; i < n; i++){
-			this->parent[i] = i;
-		}
+		this->parent = vector<int>(n,-1);
 	}
 	int root(int x){
-		if (this->parent[x] == x) return x;
+		if (this->parent[x] < 0) return x;
 		this->parent[x] = root(this->parent[x]);
 		return this->parent[x];
 	}
 	int unite(int x, int y){
 		int rx = this->root(x);
 		int ry = this->root(y);
-		if (rx == ry) return true;
-		this->parent[rx] = ry;
-		return false;
+		if (rx == ry) return false;
+		if (this->parent[rx] > this->parent[ry]) swap(rx, ry);
+		this->parent[rx] += this->parent[ry];
+		this->parent[ry] = rx;
+		return true;
 	}
 	int same(int x, int y){
 		int rx = this->root(x);
 		int ry = this->root(y);
 		return rx == ry;
 	}
+	int size(int x){
+		return -this->parent[this->root(x)];
+	}
 };
+
 
 //クラスカル法.UnionFindが必要.最小全域木の重みの総和を返す.
 //nはノード数.queは(weight,from,to)の順に格納された順序付き待ち行列.
@@ -92,38 +98,21 @@ int kruskal(int n, priority_queue<vector<int>,vector<vector<int>>,greater<vector
 	}
 	return weight;
 }
+//重みがdoubleバーション
+double kruskal(int n, priority_queue<tuple<double,int,int>,vector<tuple<double,int,int>>,greater<tuple<double,int,int>>> que){
+	UnionFind uf(n);
+	double weight = 0;
+	while(!que.empty()){
+		tuple<double, int, int> now = que.top();
+		que.pop();
+		if (!uf.same(get<1>(now),get<2>(now))){
+			uf.unite(get<1>(now), get<2>(now));
+			weight += get<0>(now);
+		}
+	}
+	return weight;
+}
 
-//連結成分のサイズがわかるUnionFind木のテンプレ.parentには根のindexが入っている.
-//根には連結成分の大きさが入っている.nはノード数.
-class SizeUnionFind{
-public:
-	vector<int> _size;
-	SizeUnionFind(){}
-	SizeUnionFind(int n){
-		this->_size = vector<int>(n,-1);
-	}
-	int root(int x){
-		if (this->_size[x] < 0) return x;
-		this->_size[x] = root(this->_size[x]);
-		return this->_size[x];
-	}
-	int unite(int x, int y){
-		int rx = this->root(x);
-		int ry = this->root(y);
-		if (rx == ry) return true;
-		this->_size[ry] += this->_size[rx];
-		this->_size[rx] = ry;
-		return false;
-	}
-	int same(int x, int y){
-		int rx = this->root(x);
-		int ry = this->root(y);
-		return rx == ry;
-	}
-	int size(int x){
-		return -this->_size[this->root(x)];
-	}
-};
 
 //ダイクストラ法のテンプレ.
 //graphはコスト付きの隣接リスト(node,costの順にpairに格納).

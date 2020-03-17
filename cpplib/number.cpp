@@ -64,6 +64,11 @@ ModInt modcomb(long long int n, long long int r, long long int _mod = 1000000007
 	return x / y;
 }
 
+//重複組み合わせ(nHr)を返す.modcomb,ModIntが必要
+ModInt H(long long int n, long long int r, long long int _mod = 1000000007){
+	return modcomb(n + r - 1, r, _mod);
+}
+
 //mod nCrを返す関数.何回も計算するときはこっち.未検証
 long long int modcomb(int n, int r, int mod = 1000000007){
 	if (n < r) return 0;
@@ -83,6 +88,28 @@ long long int modcomb(int n, int r, int mod = 1000000007){
     return fac[n] * (finv[r] * finv[n - r] % mod) % mod;
 }
 
+//累積和を返す関数.
+vector<int> csum(vector<int> a){
+	vector<int> res(a.size(), 0);
+	for (int i = 0; i < a.size();i++){
+		res[i + 1] = res[i] + a[i];
+	}
+	return res;
+}
+
+//2次元累積和を返す関数
+vector<vector<int>> csum2d(vector<vector<int>> a){
+	vector<vector<int>> res(a.size() + 1, vector<int>(a[0].size() + 1, 0));
+	for (int i = 0; i < a.size(); i++)
+	{
+		for (int j = 0; j < a[0].size(); j++)
+		{
+			res[i + 1][j + 1] = res[i][j + 1] + res[i + 1][j] - res[i][j] + a[i][j];
+		}
+	}
+	return res;
+}
+
 //最大公約数を返す関数.未検証
 long long int gcd(long long int x, long long int y){
     if (x < y) swap(x,y);
@@ -97,10 +124,11 @@ long long int gcd(long long int x, long long int y){
 long long int lcm(long long int x, long long int y){
     return x * y / gcd(x,y);
 }
-//素数かどうかを判定する関数.未検証
+
+//素数かどうかを判定する関数.
 int isprime(long long int n){
-    if (n == 2) return 1;
-    for (int i=2;i < sqrt(n)+1;i++){
+	if (n == 1) return 0;
+    for (long long int i=2;i*i <= n;i++){
         if (n % i == 0) return 0;
     }
     return 1;
